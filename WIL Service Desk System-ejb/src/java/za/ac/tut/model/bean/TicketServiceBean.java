@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.Stateless;
 import za.ac.tut.model.Ticket;
+import za.ac.tut.model.TicketPriority;
+import za.ac.tut.model.User;
 import za.ac.tut.model.util.DBConnection;
 
 @Stateless
@@ -35,15 +37,29 @@ public class TicketServiceBean implements TicketService {
         }
 
         int result = ps.executeUpdate();
-
+        
         if (result > 0) {
             ResultSet rs = conn.prepareStatement("SELECT * FROM tickets ORDER BY ticket_id DESC LIMIT 1").executeQuery();
             if (rs.isBeforeFirst()) {
                 rs.next();
                 createdTicket = getTicket(rs);
+                
+                boolean isSuccessful = conn.prepareStatement("INSERT INTO ticket_priority (ticket_id, priority_id) VALUES(" + createdTicket.getTicketId() + ", (SELECT priority_id FROM priority WHERE LOWER(priority_name) = 'low'))").executeUpdate() > 0;
+                if (isSuccessful){
+                    ResultSet priorityResult = conn.prepareStatement("SELECT priority_name, sla_time FROM priority WHERE priority_id = (SELECT priority_name FROM ticket_priority WHERE ticket_id = " + createdTicket.getTicketId() + ")").executeQuery();
+                    
+                    if (priorityResult.isBeforeFirst()){
+                        priorityResult.next();
+                        String priorityLevel = priorityResult.getString("priority_name");
+                        Integer slaTime = priorityResult.getInt("sla_time");
+                        
+                        createdTicket.getPriority().setPriorityLevel(priorityLevel);
+                        createdTicket.getPriority().setSlaTime(slaTime);
+                    }
+                }
             }
         }
-
+        
         return createdTicket;
     }
 
@@ -125,20 +141,28 @@ public class TicketServiceBean implements TicketService {
             while (rs.next()) {
                 tickets.add(getTicket(rs));
             }
+            
+            for (Ticket t : tickets){
+                ResultSet prioritiesResults = DBConnection.getConnection().prepareStatement("SELECT priority_name, sla_time FROM priority WHERE priority_id = (SELECT priority_id FROM ticket_priority WHERE ticket_id = " + t.getTicketId() + ")").executeQuery();
+                if (prioritiesResults.isBeforeFirst()){
+                    prioritiesResults.next();
+                    
+                    String priorityLevel = prioritiesResults.getString("priority_name");
+                    Integer prioritySLA = prioritiesResults.getInt("sla_time");
+                    
+                    t.getPriority().setSlaTime(prioritySLA);
+                    t.getPriority().setPriorityLevel(priorityLevel);
+                    
+                }
+                prioritiesResults.close();
+            }
         }
         return tickets;
     }
 
     @Override
     public int getTotalTickets() throws SQLException, ClassNotFoundException {
-        String query = "SELECT COUNT(*) FROM tickets";
-        try ( Connection conn = DBConnection.getConnection();  Statement stmt = conn.createStatement()) {
-            ResultSet rs = stmt.executeQuery(query);
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-            return 0;
-        }
+        return this.getAllTickets().size();
     }
 
     @Override
@@ -176,8 +200,62 @@ public class TicketServiceBean implements TicketService {
                 }
             }
         }
-        */
+         */
         return tickets;
+    }
+
+    @Override
+    public Ticket getTicketById(int ticketId) throws SQLException, ClassNotFoundException {
+        Ticket ticket = null;
+        String query = "SELECT t.*, p.priority_name, tp.priority_id "
+                + "FROM tickets t "
+                + "LEFT JOIN ticket_priorities tp ON t.ticket_id = tp.ticket_id "
+                + "LEFT JOIN priorities p ON tp.priority_id = p.priority_id "
+                + "WHERE t.ticket_id = ?";
+
+        try ( Connection conn = DBConnection.getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, ticketId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                // Creating a TicketPriority instance (you need to adjust according to your constructors)
+                TicketPriority priority = new TicketPriority(
+                        ticketId, // Assuming you pass ticketId to the priority
+                        rs.getInt("priority_id"),
+                        rs.getString("priority_name"),
+                        0 // Set default SLA time or fetch from your priorities table
+                );
+
+                // Creating the Ticket instance
+                ticket = new Ticket(
+                        rs.getInt("ticket_id"),
+                        rs.getString("title"),
+                        rs.getString("description"),
+                        rs.getString("status"),
+                        rs.getInt("created_by"),
+                        rs.getInt("assigned_to"),
+                        rs.getTimestamp("created_at"),
+                        rs.getTimestamp("updated_at")
+                );
+                ticket.setPriority(priority); // Set the priority for the ticket
+            }
+        }
+
+        return ticket;
+    }
+
+    @Override
+    public boolean updateTicketStatus(int ticketId, String title, String description, String status, String priority) throws ClassNotFoundException, SQLException {
+        int affectedRows = DBConnection.getConnection().prepareStatement("UPDATE tickets SET title = \'" + title + "\', description = \'" + description + "\', status = \'" + status + "\' WHERE ticket_id = " + ticketId ).executeUpdate();
+        
+        if (affectedRows > 0){
+            affectedRows = DBConnection.getConnection().prepareStatement("UPDATE ticket_priority SET priority_id = (SELECT priority_id FROM priority WHERE LOWER(priority_name) = \'" + priority.toLowerCase() + "\') WHERE ticket_id = " + ticketId).executeUpdate();
+            
+            return affectedRows > 0;
+        }
+        
+        return false;
     }
 
 }

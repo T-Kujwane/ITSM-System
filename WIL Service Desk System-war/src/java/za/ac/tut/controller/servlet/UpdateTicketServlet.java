@@ -22,24 +22,32 @@ public class UpdateTicketServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("user");
-
-        int ticketId = Integer.parseInt(request.getParameter("ticketId"));
-        String status = request.getParameter("status");
-        String comment = request.getParameter("comment");
-
-        boolean isUpdated;
         
-        try {
-            isUpdated = ticketService.updateTicketStatus(ticketId, status, user.getUserId(), comment);
-        } catch (ClassNotFoundException | SQLException ex) {
-            Logger.getLogger(UpdateTicketServlet.class.getName()).log(Level.SEVERE, null, ex);
-            return;
-        }
-
-        if (isUpdated) {
-            response.sendRedirect("viewTickets.jsp");
-        } else {
-            response.sendRedirect("error.jsp");
+        if (user != null){
+            int ticketId = Integer.parseInt(request.getParameter("ticketId"));
+            String title = request.getParameter("title");
+            String description = request.getParameter("description");
+            String status = request.getParameter("status");
+            String priority = request.getParameter("priority");
+            
+            boolean isSuccessful;
+            
+            try {
+                isSuccessful = this.ticketService.updateTicketStatus(ticketId, title, description, status, priority);
+            } catch (ClassNotFoundException | SQLException ex) {
+                Logger.getLogger(UpdateTicketServlet.class.getName()).log(Level.SEVERE, null, ex);
+                return;
+            }
+            
+            String msg = "Failed to update record";
+            
+            if (isSuccessful){
+                msg = "Record sucessfully updated!";
+            }
+            
+            String caller = request.getParameter("caller");
+            
+            response.sendRedirect(caller.concat("?msg=").concat(msg));
         }
     }
 }

@@ -35,7 +35,8 @@ public class CreateTicketServlet extends HttpServlet {
         
         String title = request.getParameter("title");
         String description = request.getParameter("description");
-        int assignedTo = Integer.parseInt(request.getParameter("assignedTo"));
+        String assignedToStr = request.getParameter("assignedTo");
+        int assignedTo = Integer.parseInt(assignedToStr == null? "0" : assignedToStr);
         
         Ticket ticket = new Ticket(title, description, Ticket.Status.OPEN.toString(), user.getUserId());
 
@@ -88,10 +89,10 @@ public class CreateTicketServlet extends HttpServlet {
                 url = "end_user_dashboard.jsp";
                 break;
             case 2:
-                url = "technician_dashboard.jsp";
+                url = "agent_dashboard.jsp";
                 break;
             case 3:
-                url = "agent_dashboard.jsp";
+                url = "technician_dashboard.jsp";
                 break;
             default:
                 url = "manager_dashboard.jsp";

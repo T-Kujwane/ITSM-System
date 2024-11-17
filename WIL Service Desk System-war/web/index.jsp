@@ -20,9 +20,9 @@
             <section class="actions-section">
                 <nav>
                     <ul class="actions-list">
-                        <li><a href="create_ticket.jsp">Create Ticket</a></li>
-                        <li><a href="login.jsp">Login</a></li>
-                        <li><a href="faq.jsp">Help/FAQ</a></li>
+                        <li><a class="action-link" href="create_ticket.jsp">Create Ticket</a></li>
+                        <li><a class="action-link" href="login.jsp">Login</a></li>
+                        <li><a class="action-link" href="faq.jsp">Help/FAQ</a></li>
                     </ul>
                 </nav>
             </section>
