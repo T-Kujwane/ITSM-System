@@ -1,0 +1,196 @@
+/* General Page Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    font-size: 24px;
+}
+
+footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    margin-top: 20px;
+}
+
+/* Main content container */
+main.container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Hyperlink Styling (visible on any background) */
+a {
+    color: #0066cc; /* Bright blue for visibility */
+    text-decoration: none; /* Remove underlines */
+}
+
+a:hover {
+    color: #004080; /* Darker blue on hover */
+    text-decoration: underline; /* Underline on hover */
+}
+
+/* Form Styles */
+form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+form label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 16px;
+    color: #333;
+}
+
+form input, form select, form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+form button {
+    width: 100%;
+    padding: 12px 20px;
+    background-color: #5cb85c;
+    color: white;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+form button:hover {
+    background-color: #4cae4c;
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    text-align: center;
+}
+
+table th, table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+}
+
+table th {
+    background-color: #333;
+    color: white;
+    font-size: 18px;
+}
+
+table td {
+    font-size: 16px;
+    background-color: #f9f9f9;
+}
+
+/* Responsive Design for Smaller Screens */
+@media (max-width: 768px) {
+    .actions-list {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .action-link {
+        margin-bottom: 10px;
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* Notification Box Styling */
+/* Notification Box */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+/* Success Notification */
+.notification.success {
+    background-color: #28a745; /* Green */
+}
+
+/* Error Notification */
+.notification.error {
+    background-color: #dc3545; /* Red */
+}
+
+/* Show the notification */
+.notification.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Fade out after 3 seconds */
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+.fade-out {
+    animation: fadeOut, 3s ease-in, forwards; /* Corrected syntax */
+}
+
+/* General Styles for the Navigation Links */
+.actions-list {
+    list-style-type: none; /* Remove bullets */
+    padding: 0;            /* Remove default padding */
+    margin: 0;             /* Remove default margin */
+    display: flex;         /* Use Flexbox to lay out items horizontally */
+    justify-content: space-between; /* Space items evenly */
+    gap: 20px;             /* Add some space between the links */
+}
+
+.actions-list li {
+    /* You can style the list items here if needed */
+}
+
+.action-link {
+    color: #0066cc;        /* Link color */
+    text-decoration: none; /* Remove underlines */
+    padding: 8px 16px;     /* Add some padding around the links */
+    border-radius: 4px;    /* Optional: rounded corners */
+}
+
+.action-link:hover {
+    color: #004080;        /* Darker blue on hover */
+    text-decoration: underline; /* Underline on hover */
+}
