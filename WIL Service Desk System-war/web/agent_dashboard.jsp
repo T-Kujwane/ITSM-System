@@ -1,3 +1,4 @@
+<%@page import="za.ac.tut.model.bean.UserService"%>
 <%@page import="za.ac.tut.model.User"%>
 <%@page import="java.util.List"%>
 <%@page import="za.ac.tut.model.Ticket"%>
@@ -15,39 +16,35 @@
             
             User usr = (User) request.getSession().getAttribute("user");
             if (usr == null) {
-                response.sendRedirect("login.jsp?resource=agent_dashboard.jsp");
+                response.sendRedirect("login-page?resource=agent");
                 return;
             }
         %>
         <header>
             <h1>Service Desk Agent Dashboard</h1>
         </header>
-
+        <section>
+            <span>
+                <h2>Logged in as: <%= usr.getFullName() %></h2>
+            </span>
+        </section>
         <main class="container">
             <%
                 if (usr.getRoleId() == 2) {
             %>
-                    <section>
-                        <span>
-                            <h2>Logged in as: <%= usr.getFullName() %></h2>
-                        </span>
-                    </section>
-
                     <!-- Ticket Management Actions -->
                     <section class="actions-section">
                         <h2>Ticket Actions</h2>
                         <ul class="actions-list">
                             <li><a href="manage_tickets.jsp" class="action-link">Manage Tickets</a></li>
                             <li><a href="assign_ticket.jsp" class="action-link">Assign Ticket</a></li>
-                            <li><a href="logout.jsp" class="action-link">Logout</a></li>
+                            <li><a href="logout" class="action-link">Logout</a></li>
                         </ul>
                     </section>
-
-            <!-- Ticket Overview Section -->
+                <!-- Ticket Overview Section -->
                 <%
                     Context ctx = new InitialContext();
                     TicketService ticketService = (TicketService) ctx.lookup("java:global/WIL_Service_Desk_System/WIL_Service_Desk_System-ejb/TicketServiceBean");
-                    
                     List<Ticket> allTickets = ticketService.getAllTickets(); // You can filter by status or other parameters as needed
                     List<Ticket> openTickets = ticketService.getTicketsByStatus("Open");
                     List<Ticket> escalatedTickets = ticketService.getTicketsByStatus("Escalated");
@@ -88,6 +85,7 @@
                             <th>Title</th>
                             <th>Status</th>
                             <th>Priority</th>
+                            <th>Assigned Technician</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -95,15 +93,16 @@
                         <%  
                             if (allTickets != null && !allTickets.isEmpty()) {
                                 for (Ticket ticket : allTickets) {
-                                System.out.println("Processing ticket: " + ticket);
+                                System.out.println("Processing ticket: " + ticket + " on a " + allTickets.size() + " list");
                         %>
                                     <tr>
                                         <td><%= ticket.getTicketId() %></td>
                                         <td><%= ticket.getTitle() %></td>
                                         <td><%= ticket.getStatus().toUpperCase() %></td>
                                         <td><%= ticket.getPriority().getPriorityLevel().toUpperCase().replace("_", "")%></td>
+                                        <td><%= ticket.getAssignedTo().getFullName()%></td>
                                         <td>
-                                            <button class="action-link" onclick="openTicketModal(<%= ticket.getTicketId() %>, '<%= ticket.getTitle() %>', '<%= ticket.getDescription() %>', '<%= ticket.getStatus().toUpperCase() %>', '<%= ticket.getPriority().getPriorityLevel().toUpperCase()%>')">Manage</button>
+                                            <button class="action-link" onclick="openTicketModal(<%= ticket.getTicketId() %>, '<%= ticket.getTitle() %>', '<%= ticket.getDescription() %>', '<%= ticket.getStatus().toUpperCase() %>', '<%= ticket.getPriority().getPriorityLevel().toUpperCase()%>', <%= ticket.getAssignedTo().getUserId()%>)">Manage</button>
                                         </td>
                                     </tr>
                         <%
@@ -160,6 +159,23 @@
                         <option value="MEDIUM">Medium</option>
                         <option value="LOW">Low</option>
                     </select>
+                    
+                    <label for="assign_technician">Assign to Technician:</label>
+                    <select name="assignedTo" id="assign_technician" required>
+                    <%
+                        Context ctx = new InitialContext();
+                        UserService userService = (UserService) ctx.lookup("java:global/WIL_Service_Desk_System/WIL_Service_Desk_System-ejb/UserService");
+                        List<User> technicians = userService.getUserByType("technician");
+                        if (technicians.isEmpty()) {
+                    %>
+                        <option value="-1" selected=>No technicians available yet</option>
+                    <% } else { %>
+                            <option value="1">Do not assign</option>
+                        <% for (User u : technicians) { %>
+                            <option value="<%= u.getUserId() %>"><%= u.getFullName() %></option>
+                        <% } %>
+                    <% } %>
+                    </select><br>
 
                     <button type="submit" class="action-button">Save Changes</button>
                     <button type="button" class="action-button" onclick="closeModal()" style="background-color: #dc3545;">Cancel Update</button>

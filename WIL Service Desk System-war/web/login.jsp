@@ -14,13 +14,13 @@
                 String redirectURL;
                 switch(usr.getRoleId()){
                     case 1:     //End user
-                        redirectURL = "end_user_dashboard.jsp";
+                        redirectURL = "user";
                     case 2:     //Service desk agent
-                        redirectURL = "agent_dashboard.jsp";
+                        redirectURL = "agent";
                     case 3:     //Technician
-                        redirectURL = "technician_dashboard.jsp";
+                        redirectURL = "technician";
                     default:    //Manager
-                        redirectURL = "manager_dashboard.jsp";
+                        redirectURL = "manager";
                 }
                 response.sendRedirect(redirectURL);
                 return;

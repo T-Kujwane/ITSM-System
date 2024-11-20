@@ -38,7 +38,7 @@
         <script>
             // Redirect after 3 seconds
             setTimeout(function () {
-                window.location.href = "index.jsp";
+                window.location.href = "home";
             }, 3000);
         </script>
     </head>

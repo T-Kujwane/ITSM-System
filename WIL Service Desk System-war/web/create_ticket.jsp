@@ -66,7 +66,7 @@
                 %>
                     <option value="-1">No technicians available yet</option>
                 <% } else { %>
-                        <option value="0">Do not assign</option>
+                        <option value="1">Do not assign</option>
                     <% for (User u : technicians) { %>
                         <option value="<%= u.getUserId() %>"><%= u.getFullName() %></option>
                     <% } %>

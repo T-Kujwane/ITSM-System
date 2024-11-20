@@ -3,6 +3,7 @@
     Created on : 17 Sept 2024, 22:00:23
     Author     : Thato Keith Kujwane
 --%>
+<%@page import="za.ac.tut.model.User"%>
 <%@ page import="za.ac.tut.model.Ticket" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.time.LocalDate" %>
@@ -12,24 +13,36 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Technician Dashboard</title>
+        <title>ITSM - Dashboard</title>
         <link rel="stylesheet" href="styles.css"> <!-- Link to external CSS -->
     </head>
     <body>
+        <%
+            User usr = (User) request.getSession().getAttribute("user");
+            if (usr == null) {
+                response.sendRedirect("login-page?resource=technician");
+                return;
+            }
+        %>
         <header>
             <div class="navbar">
                 <h1>Technician Dashboard</h1>
                 <nav>
                     <ul>
-                        <li><a href="technician_dashboard.jsp">Dashboard</a></li>
+                        <li><a href="technician">Refresh</a></li>
+                        <li><a href="home">Home</a></li>
                         <li><a href="ticket_history.jsp">Ticket History</a></li>
                         <li><a href="profile.jsp">Profile</a></li>
-                        <li><a href="logout.jsp">Logout</a></li>
+                        <li><a href="logout">Logout</a></li>
                     </ul>
                 </nav>
             </div>
         </header>
-
+        <section>
+            <span>
+                <h2>Logged in as: <%= usr.getFullName() %></h2>
+            </span>
+        </section>
         <main class="container">
             <h2>Your Assigned Tickets</h2>
 

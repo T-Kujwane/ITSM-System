@@ -36,14 +36,14 @@ public class CreateTicketServlet extends HttpServlet {
         String title = request.getParameter("title");
         String description = request.getParameter("description");
         String assignedToStr = request.getParameter("assignedTo");
-        int assignedTo = Integer.parseInt(assignedToStr == null? "0" : assignedToStr);
+        int assignedTo = Integer.parseInt(assignedToStr == null? "1" : assignedToStr);
         
         Ticket ticket = new Ticket(title, description, Ticket.Status.OPEN.toString(), user.getUserId());
 
         Ticket createdTicket;
 
         try {
-            if (assignedTo > 0){
+            if (assignedTo > 1){
                 ticket.setAssignedTo(assignedTo);
             }
             
@@ -56,12 +56,16 @@ public class CreateTicketServlet extends HttpServlet {
                 String emailMessage = "A new ticket has been created\n"
                         + "Ticket ID: REP00000" + createdTicket.getTicketId() + "\n"
                         + "Title: " + title + "\n"
-                        + "Description: " + description;
+                        + "Description: " + description + "\n\n\n"
+                        + "The assigned ticket is of Priority Level - " + createdTicket.getPriority().getPriorityLevel()
+                        + " and should be resolved within " + createdTicket.getPriority().getSlaTime() + " hours.";
                 
-                if (createdTicket.getAssignedTo() != 0){
-                    String technicianEmail = this.userService.getUserEmail(createdTicket.getAssignedTo());
-                    //Notify technician of the assigned ticket
-                    emailService.sendEmail(technicianEmail, emailSubject, emailMessage);
+                if (createdTicket.getAssignedTo() != null){
+                    if (createdTicket.getAssignedTo().getEmail() != null && ! createdTicket.getAssignedTo().getEmail().equalsIgnoreCase("null") && ! createdTicket.getAssignedTo().getEmail().isEmpty()){
+                        String technicianEmail = this.userService.getUserEmail(createdTicket.getAssignedTo().getUserId());
+                        //Notify technician of the assigned ticket
+                        emailService.sendEmail(technicianEmail, emailSubject, emailMessage);
+                    }
                 }
                 
                 //Notify creator that their ticket has been created
@@ -86,17 +90,16 @@ public class CreateTicketServlet extends HttpServlet {
 
         switch (user.getRoleId()) {
             case 1:
-                url = "end_user_dashboard.jsp";
+                url = "user";
                 break;
             case 2:
-                url = "agent_dashboard.jsp";
+                url = "agent";
                 break;
             case 3:
-                url = "technician_dashboard.jsp";
+                url = "technician";
                 break;
             default:
-                url = "manager_dashboard.jsp";
-
+                url = "manager";
         }
 
         response.sendRedirect(url + "?msg=" + msg);

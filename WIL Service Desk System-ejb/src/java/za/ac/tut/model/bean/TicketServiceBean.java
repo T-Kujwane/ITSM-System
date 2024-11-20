@@ -5,14 +5,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import za.ac.tut.model.Ticket;
-import za.ac.tut.model.TicketPriority;
 import za.ac.tut.model.User;
 import za.ac.tut.model.util.DBConnection;
 
 @Stateless
 public class TicketServiceBean implements TicketService {
+
+    @EJB
+    private UserService userService;
 
     // Create Ticket (used by End Users)
     @Override
@@ -21,7 +24,7 @@ public class TicketServiceBean implements TicketService {
         Connection conn = DBConnection.getConnection();
         String query;
 
-        if (ticket.getAssignedTo() > 0) {
+        if (ticket.getAssignedTo() != null && ticket.getAssignedTo().getUserId() > 1) {
             query = "INSERT INTO tickets (title, description, created_by, assigned_to) VALUES (?, ?, ?, ?)";
         } else {
             query = "INSERT INTO tickets (title, description, created_by) VALUES (?, ?, ?)";
@@ -32,34 +35,25 @@ public class TicketServiceBean implements TicketService {
         ps.setString(2, ticket.getDescription());
         ps.setInt(3, ticket.getCreatedBy());
 
-        if (ticket.getAssignedTo() > 0) {
-            ps.setInt(4, ticket.getAssignedTo());
+        if (ticket.getAssignedTo() != null && ticket.getAssignedTo().getUserId() > 1) {
+            ps.setInt(4, ticket.getAssignedTo().getUserId());
         }
 
         int result = ps.executeUpdate();
-        
+
         if (result > 0) {
-            ResultSet rs = conn.prepareStatement("SELECT * FROM tickets ORDER BY ticket_id DESC LIMIT 1").executeQuery();
+            ResultSet rs = conn.prepareStatement("SELECT ticket_id FROM tickets ORDER BY ticket_id DESC LIMIT 1").executeQuery();
             if (rs.isBeforeFirst()) {
                 rs.next();
-                createdTicket = getTicket(rs);
-                
-                boolean isSuccessful = conn.prepareStatement("INSERT INTO ticket_priority (ticket_id, priority_id) VALUES(" + createdTicket.getTicketId() + ", (SELECT priority_id FROM priority WHERE LOWER(priority_name) = 'low'))").executeUpdate() > 0;
-                if (isSuccessful){
-                    ResultSet priorityResult = conn.prepareStatement("SELECT priority_name, sla_time FROM priority WHERE priority_id = (SELECT priority_name FROM ticket_priority WHERE ticket_id = " + createdTicket.getTicketId() + ")").executeQuery();
-                    
-                    if (priorityResult.isBeforeFirst()){
-                        priorityResult.next();
-                        String priorityLevel = priorityResult.getString("priority_name");
-                        Integer slaTime = priorityResult.getInt("sla_time");
-                        
-                        createdTicket.getPriority().setPriorityLevel(priorityLevel);
-                        createdTicket.getPriority().setSlaTime(slaTime);
-                    }
+                int ticketID = rs.getInt("ticket_id");
+
+                boolean isSuccessful = conn.prepareStatement("INSERT INTO ticket_priority (ticket_id, priority_id) VALUES(" + ticketID + ", (SELECT priority_id FROM priority WHERE LOWER(priority_name) = 'low'))").executeUpdate() > 0;
+                if (isSuccessful) {
+                    createdTicket = getTicketById(ticketID);
                 }
             }
         }
-        
+
         return createdTicket;
     }
 
@@ -120,7 +114,7 @@ public class TicketServiceBean implements TicketService {
         return tickets;
     }
 
-    private Ticket getTicket(ResultSet rs) throws SQLException {
+    private Ticket getTicket(ResultSet rs) throws SQLException, SQLException, SQLException, SQLException {
         return new Ticket(
                 rs.getInt("ticket_id"),
                 rs.getString("title"),
@@ -134,27 +128,26 @@ public class TicketServiceBean implements TicketService {
     }
 
     @Override
-    public List<Ticket> getAllTickets() throws SQLException, ClassNotFoundException {
+    synchronized public List<Ticket> getAllTickets() throws SQLException, ClassNotFoundException {
         ResultSet rs = DBConnection.getConnection().prepareStatement("SELECT * FROM tickets").executeQuery();
         List<Ticket> tickets = new ArrayList<>();
+        Map<Integer, Ticket> replacementTicketsMap = new HashMap<>();
+
         if (rs.isBeforeFirst()) {
             while (rs.next()) {
                 tickets.add(getTicket(rs));
             }
-            
-            for (Ticket t : tickets){
-                ResultSet prioritiesResults = DBConnection.getConnection().prepareStatement("SELECT priority_name, sla_time FROM priority WHERE priority_id = (SELECT priority_id FROM ticket_priority WHERE ticket_id = " + t.getTicketId() + ")").executeQuery();
-                if (prioritiesResults.isBeforeFirst()){
-                    prioritiesResults.next();
-                    
-                    String priorityLevel = prioritiesResults.getString("priority_name");
-                    Integer prioritySLA = prioritiesResults.getInt("sla_time");
-                    
-                    t.getPriority().setSlaTime(prioritySLA);
-                    t.getPriority().setPriorityLevel(priorityLevel);
-                    
-                }
-                prioritiesResults.close();
+
+            for (Ticket t : tickets) {
+                Ticket ticket = this.getTicketById(t.getTicketId());
+                int ticketIndex = tickets.indexOf(t);
+                replacementTicketsMap.put(ticketIndex, ticket);
+            }
+
+            tickets.clear();
+
+            for (Map.Entry<Integer, Ticket> ticketReplacement : replacementTicketsMap.entrySet()) {
+                tickets.add(ticketReplacement.getKey(), ticketReplacement.getValue());
             }
         }
         return tickets;
@@ -207,54 +200,52 @@ public class TicketServiceBean implements TicketService {
     @Override
     public Ticket getTicketById(int ticketId) throws SQLException, ClassNotFoundException {
         Ticket ticket = null;
-        String query = "SELECT t.*, p.priority_name, tp.priority_id "
-                + "FROM tickets t "
-                + "LEFT JOIN ticket_priorities tp ON t.ticket_id = tp.ticket_id "
-                + "LEFT JOIN priorities p ON tp.priority_id = p.priority_id "
-                + "WHERE t.ticket_id = ?";
+        Connection conn = DBConnection.getConnection();
 
-        try ( Connection conn = DBConnection.getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+        ResultSet rs = conn.prepareStatement("SELECT * FROM tickets WHERE ticket_id = " + ticketId).executeQuery();
+        if (rs.isBeforeFirst()) {
+            rs.next();
+            ticket = getTicket(rs);
+            System.out.println("Selecting priority_id");
+            //ResultSet priorityResult = conn.prepareStatement("SELECT p.priority_name, p.sla_time FROM priority p WHERE p.priority_id = (SELECT tp.priority__id FROM ticket_priority tp WHERE tp.ticket_id = " + ticket.getTicketId() + ")").executeQuery();
+            ResultSet priorityResult = conn.prepareStatement("SELECT p.priority_name, p.sla_time FROM priority p, ticket_priority tp WHERE p.priority_id = tp.priority_id AND tp.ticket_id = " + ticket.getTicketId()).executeQuery();
+            System.out.println("Done selecting priority_id");
+            if (priorityResult.isBeforeFirst()) {
+                priorityResult.next();
+                String priorityLevel = priorityResult.getString("priority_name");
+                Integer slaTime = priorityResult.getInt("sla_time");
 
-            ps.setInt(1, ticketId);
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                // Creating a TicketPriority instance (you need to adjust according to your constructors)
-                TicketPriority priority = new TicketPriority(
-                        ticketId, // Assuming you pass ticketId to the priority
-                        rs.getInt("priority_id"),
-                        rs.getString("priority_name"),
-                        0 // Set default SLA time or fetch from your priorities table
-                );
-
-                // Creating the Ticket instance
-                ticket = new Ticket(
-                        rs.getInt("ticket_id"),
-                        rs.getString("title"),
-                        rs.getString("description"),
-                        rs.getString("status"),
-                        rs.getInt("created_by"),
-                        rs.getInt("assigned_to"),
-                        rs.getTimestamp("created_at"),
-                        rs.getTimestamp("updated_at")
-                );
-                ticket.setPriority(priority); // Set the priority for the ticket
+                ticket.getPriority().setPriorityLevel(priorityLevel);
+                ticket.getPriority().setSlaTime(slaTime);
             }
+
+            priorityResult.close();
+            System.out.println("Getting assigned technician for ticket " + ticketId);
+            ResultSet assignedTechnicianRes = conn.prepareStatement("SELECT assigned_to FROM tickets WHERE ticket_id = " + ticket.getTicketId()).executeQuery();
+            assignedTechnicianRes.next();
+
+            int assignedTechnicianID = assignedTechnicianRes.getInt("assigned_to");
+            System.out.println("Ticket " + ticketId + " is assigned to technician " + assignedTechnicianID);
+            assignedTechnicianRes.close();
+
+            User assignedTechnician = this.userService.getUserByID(assignedTechnicianID == 0 ? 1 : assignedTechnicianID);
+
+            ticket.setAssignedTo(assignedTechnician);
         }
 
         return ticket;
     }
 
     @Override
-    public boolean updateTicketStatus(int ticketId, String title, String description, String status, String priority) throws ClassNotFoundException, SQLException {
-        int affectedRows = DBConnection.getConnection().prepareStatement("UPDATE tickets SET title = \'" + title + "\', description = \'" + description + "\', status = \'" + status + "\' WHERE ticket_id = " + ticketId ).executeUpdate();
-        
-        if (affectedRows > 0){
+    public boolean updateTicketStatus(int ticketId, String title, String description, String status, String priority, int assignedTO) throws ClassNotFoundException, SQLException {
+        int affectedRows = DBConnection.getConnection().prepareStatement("UPDATE tickets SET title = \'" + title + "\', description = \'" + description + "\', status = \'" + status + "\', assigned_to = " + assignedTO + " WHERE ticket_id = " + ticketId).executeUpdate();
+
+        if (affectedRows > 0) {
             affectedRows = DBConnection.getConnection().prepareStatement("UPDATE ticket_priority SET priority_id = (SELECT priority_id FROM priority WHERE LOWER(priority_name) = \'" + priority.toLowerCase() + "\') WHERE ticket_id = " + ticketId).executeUpdate();
-            
+
             return affectedRows > 0;
         }
-        
+
         return false;
     }
 

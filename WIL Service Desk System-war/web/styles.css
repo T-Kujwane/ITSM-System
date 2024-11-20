@@ -343,3 +343,8 @@ nav ul li a:hover {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+.nav-link:hover{
+    background-color: whitesmoke;
+    color: black;
+}

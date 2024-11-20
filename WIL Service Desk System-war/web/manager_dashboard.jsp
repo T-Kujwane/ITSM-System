@@ -14,23 +14,22 @@
         <%
             User usr = (User) request.getSession().getAttribute("user");
             if (usr == null) {
-                response.sendRedirect("login.jsp?resource=manager_dashboard.jsp");
+                response.sendRedirect("login-page?resource=manager");
                 return;
             }
         %>
         <header>
             <h1>Manager Dashboard</h1>
         </header>
-        
+        <section>
+            <span>
+                <h2>Logged in as: <%= usr.getFullName() %></h2>
+            </span>
+        </section>
         <main class="container">
             <%
                 if(usr.getRoleId() == 4){
             %>
-                <section>
-                    <span>
-                        <h2>Logged in user: <%= usr.getFullName()%></h2>
-                    </span>
-                </section>
                 <!-- Action Links for the Manager -->
                 <section class="actions-section">
                     <h2>Actions</h2>
@@ -40,7 +39,7 @@
                         <li><a href="update_user.jsp" class="action-link">Update User</a></li>
                         <li><a href="view_reports.jsp" class="action-link">View Reports</a></li>
                         <li><a href="manage_tickets.jsp" class="action-link">Manage Tickets</a></li>
-                        <li><a href="logout.jsp" class="action-link">Logout</a></li>
+                        <li><a href="logout" class="action-link">Logout</a></li>
                     </ul>
                 </section>
                 <%
