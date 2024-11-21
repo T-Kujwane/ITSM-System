@@ -20,7 +20,7 @@
             // Assuming the user is already logged in
             User usr = (User) request.getSession().getAttribute("user");
             if (usr == null) {
-                response.sendRedirect("login.jsp?resource=view_reports.jsp");
+                response.sendRedirect("login-page?resource=view_reports.jsp");
                 return;
             }
         %>
@@ -32,16 +32,16 @@
             String userDashboard;
             switch(loggedInUserRoleID){
                 case 1:
-                    userDashboard = "end_user_dashboard.jsp";
+                    userDashboard = "user";
                     break;
                 case 2:
-                    userDashboard = "agent_dashboard.jsp";
+                    userDashboard = "agent";
                     break;
                 case 3:
-                    userDashboard = "technician_dashboard.jsp";
+                    userDashboard = "technician";
                     break;
                 default:
-                    userDashboard = "manager_dashboard.jsp";
+                    userDashboard = "manager";
             }
         %>
         <section>

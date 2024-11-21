@@ -9,23 +9,31 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Welcome to Our ITSM</title>
+        <title>ITSM - Home</title>
         <link rel="stylesheet" href="styles.css">
     </head>
     <body>
-        <header>
-            <h1>Welcome to Our IT Service Management System</h1>
+        <header class="navbar">
+            <h1>IT Service Management Home</h1>
+            <nav>
+                <ul class="actions-list">
+                    <!--<li><a class="nav-link" href="home">Home</a></li>-->
+                    <li><a class="nav-link" href="create_ticket.jsp">Create Ticket</a></li>
+                    <li><a class="nav-link" href="login-page">Login</a></li>
+                    <li><a class="nav-link" href="faq">FAQ</a></li>
+                </ul>
+            </nav>
         </header>
         <main class="container">
-            <section class="actions-section">
+            <!--<section class="actions-section">
                 <nav>
                     <ul class="actions-list">
-                        <li><a href="create_ticket.jsp">Create Ticket</a></li>
-                        <li><a href="login.jsp">Login</a></li>
-                        <li><a href="faq.jsp">Help/FAQ</a></li>
+                        <li><a class="action-link" href="create_ticket.jsp">Create Ticket</a></li>
+                        <li><a class="action-link" href="login.jsp">Login</a></li>
+                        <li><a class="action-link" href="faq.jsp">Help/FAQ</a></li>
                     </ul>
                 </nav>
-            </section>
+            </section>-->
             
             <section>
                 <h2>Need Help?</h2>

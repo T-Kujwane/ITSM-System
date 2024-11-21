@@ -51,20 +51,28 @@
         </script>
     </head>
     <body>
-        <header>
+        <header class="navbar">
             <h1>ITSM System - FAQ</h1>
+            <nav>
+                <ul class="actions-list">
+                    <li><a class="nav-link" href="home">Home</a></li>
+                    <li><a class="nav-link" href="create_ticket.jsp">Create Ticket</a></li>
+                    <li><a class="nav-link" href="login-page">Login</a></li>
+                    <li><a class="nav-link" href="faq">FAQ</a></li>
+                </ul>
+            </nav>
         </header>
         
         <main class="container">
-            <section class="actions-section">
+            <!--<section class="actions-section">
                 <nav>
                     <ul class="actions-list">
                         <li><a href="create_ticket.jsp">Create Ticket</a></li>
-                        <li><a href="login.jsp">Login</a></li>
-                        <li><a href="faq.jsp">Help/FAQ</a></li>
+                        <li><a href="login-page">Login</a></li>
+                        <li><a href="faq">Help/FAQ</a></li>
                     </ul>
                 </nav>
-            </section>            
+            </section>-->
             <h2>Frequently Asked Questions</h2>
             <table>
                 <thead>

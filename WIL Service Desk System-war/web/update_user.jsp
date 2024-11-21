@@ -9,7 +9,7 @@
         <%
             User usr = (User) request.getSession().getAttribute("user");
             if (usr == null) {
-                response.sendRedirect("login.jsp?resource=update_user.jsp");
+                response.sendRedirect("login-page?resource=update_user.jsp");
                 return;
             }
         %>
@@ -21,16 +21,16 @@
             String userDashboard;
             switch(loggedInUserRoleID){
                 case 1:
-                    userDashboard = "end_user_dashboard.jsp";
+                    userDashboard = "user";
                     break;
                 case 2:
-                    userDashboard = "agent_dashboard.jsp";
+                    userDashboard = "agent";
                     break;
                 case 3:
-                    userDashboard = "technician_dashboard.jsp";
+                    userDashboard = "technician";
                     break;
                 default:
-                    userDashboard = "manager_dashboard.jsp";
+                    userDashboard = "manager";
             }
         %>
         <a href="<%=userDashboard%>">Dashboard</a>

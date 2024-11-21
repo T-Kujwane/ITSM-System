@@ -70,7 +70,6 @@ public class UpdateUserServlet extends HttpServlet {
             usr = null;
         }
         
-        System.out.println(msg + "\n\n" + "User value is " + usr);
         request.getSession(false).setAttribute("searchUser", usr);
         response.sendRedirect(caller.concat("?msg=".concat(msg)));
     }

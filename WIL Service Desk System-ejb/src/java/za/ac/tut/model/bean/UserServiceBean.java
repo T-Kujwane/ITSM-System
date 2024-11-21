@@ -82,8 +82,6 @@ public class UserServiceBean implements UserService {
         rs.next();
 
         User user = getUser(rs);
-        user.setUserId(rs.getInt("user_id"));
-
         return user;
     }
 

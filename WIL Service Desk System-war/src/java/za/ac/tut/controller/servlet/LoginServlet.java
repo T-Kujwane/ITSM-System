@@ -51,27 +51,32 @@ public class LoginServlet extends HttpServlet {
 
             switch (authenticatedUser.getRoleId()) {
                 case 1: // End User
-                    response.sendRedirect("end_user_dashboard.jsp");
+                    response.sendRedirect("user");
                     break;
                 case 2: // Agent
-                    response.sendRedirect("agent_dashboard.jsp");
+                    response.sendRedirect("agent");
                     break;
                 case 3: // Technician
-                    response.sendRedirect("technician_dashboard.jsp");
+                    response.sendRedirect("technician");
                     break;
                 case 4: // Manager
-                    response.sendRedirect("manager_dashboard.jsp");
+                    response.sendRedirect("manager");
                     break;
                 default:
-                    response.sendRedirect("login.jsp");
+                    response.sendRedirect("login-page");
                     break;
             }
         } else {
-            response.sendRedirect("login.jsp?error=" + errorMessage + 
+            response.sendRedirect("login-page?error=" + errorMessage + 
                     (resource != null ? "&resource=" + resource : "") + 
                     "&username=" + username + "&password=" + password
             );
         }
     }
 
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        doPost(req, resp);
+    }
+    
 }
