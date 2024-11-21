@@ -82,7 +82,6 @@ public class UserServiceBean implements UserService {
         rs.next();
 
         User user = getUser(rs);
-        
         return user;
     }
 

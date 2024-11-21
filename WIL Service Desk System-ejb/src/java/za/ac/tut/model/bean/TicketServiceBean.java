@@ -9,6 +9,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import za.ac.tut.model.Ticket;
 import za.ac.tut.model.User;
+
 import za.ac.tut.model.util.DBConnection;
 
 @Stateless
@@ -248,5 +249,4 @@ public class TicketServiceBean implements TicketService {
 
         return false;
     }
-
 }
