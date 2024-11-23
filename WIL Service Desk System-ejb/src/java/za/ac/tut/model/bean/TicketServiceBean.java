@@ -249,4 +249,46 @@ public class TicketServiceBean implements TicketService {
         return false;
     }
 
+   
+    @Override
+    public boolean updateTicketStatusAndComment(int ticketId, String status, String comment, int updatedBy) throws ClassNotFoundException, SQLException {
+        boolean isUpdated = false;
+        Connection conn = DBConnection.getConnection();
+
+        // Update ticket status
+        String updateQuery = "UPDATE tickets SET status = ? WHERE ticket_id = ?";
+        PreparedStatement updatePs = conn.prepareStatement(updateQuery);
+        updatePs.setString(1, status);
+        updatePs.setInt(2, ticketId);
+        int updateResult = updatePs.executeUpdate();
+
+        // Insert comment in ticket_updates
+        String logQuery = "INSERT INTO ticket_updates (ticket_id, updated_by, comment) VALUES (?, ?, ?)";
+        PreparedStatement logPs = conn.prepareStatement(logQuery);
+        logPs.setInt(1, ticketId);
+        logPs.setInt(2, updatedBy);
+        logPs.setString(3, comment);
+        int logResult = logPs.executeUpdate();
+
+        if (updateResult > 0 && logResult > 0) {
+            isUpdated = true;
+        }
+
+        return isUpdated;
+    }
+      public static boolean addCommentToTicket(int ticketId, String comment, int userId) throws ClassNotFoundException {
+        try (Connection conn = DBConnection.getConnection()) {
+            String query = "INSERT INTO comments (ticket_id, comment, user_id, created_at) VALUES (?, ?, ?, NOW())";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setInt(1, ticketId);
+            stmt.setString(2, comment);
+            stmt.setInt(3, userId);
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+      }
+
 }

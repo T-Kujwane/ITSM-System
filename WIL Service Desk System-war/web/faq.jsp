@@ -1,3 +1,9 @@
+<%-- 
+    Document   : dashboard
+    Created on : 15 Sept 2024, 02:00:59
+    Author     : Thandeka Matampane
+--%>
+
 <%@page import="java.time.LocalDate"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>

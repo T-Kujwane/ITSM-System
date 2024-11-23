@@ -1,3 +1,9 @@
+<%-- 
+    Document   : dashboard
+    Created on : 15 Sept 2024, 02:00:59
+    Author     : Thandeka Matampane
+--%>
+
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="en">

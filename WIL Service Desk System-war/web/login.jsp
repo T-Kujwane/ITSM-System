@@ -1,3 +1,9 @@
+<%-- 
+    Document   : dashboard
+    Created on : 15 Sept 2024, 02:00:59
+    Author     : Thandeka Matampane
+--%>
+
 <%@page import="java.time.LocalDate"%>
 <%@page import="za.ac.tut.model.User"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -52,8 +58,13 @@
         %>
             <p style="color: red;"><%=errorMsg%>. Please try again.</p>
         <% } %>
-        
+
+        <!-- Links for Forgot Password and Register -->
         <footer>
+            <p>
+                <a href="forgot_password.jsp">Forgot Password?</a> | 
+                <a href="create_account.jsp">Create Account</a>
+            </p>
             <p>&copy; <%= LocalDate.now().getYear()%> IT Service Management System</p>
         </footer>
 

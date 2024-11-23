@@ -1,3 +1,9 @@
+<%-- 
+    Document   : dashboard
+    Created on : 15 Sept 2024, 02:00:59
+    Author     : Thandeka Matampane
+--%>
+
 <%@page import="za.ac.tut.model.User"%>
 <%@page import="java.util.List"%>
 <%@page import="za.ac.tut.model.Ticket"%>
