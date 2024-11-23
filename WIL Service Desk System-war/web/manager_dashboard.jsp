@@ -38,7 +38,8 @@
                         <li><a href="create_user.jsp" class="action-link">Create User</a></li>
                         <li><a href="update_user.jsp" class="action-link">Update User</a></li>
                         <li><a href="view_reports.jsp" class="action-link">View Reports</a></li>
-                        <li><a href="manage_tickets.jsp" class="action-link">Manage Tickets</a></li>
+                        <li><a href="generate_reports.jsp" class="action-link">Generate Report</a></li>
+                       <!--  <li><a href="manage_tickets.jsp" class="action-link">Manage Tickets</a></li> -->
                         <li><a href="logout" class="action-link">Logout</a></li>
                     </ul>
                 </section>

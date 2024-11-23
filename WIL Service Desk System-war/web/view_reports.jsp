@@ -1,5 +1,5 @@
 <%@page import="javax.naming.Context"%>
-<%@page import="shaded.com.google.gson.Gson"%>
+<%@page import="com.google.gson.Gson"%>
 <%@page import="java.time.LocalDate"%>
 <%@ page import="za.ac.tut.model.User"%>
 <%@ page import="za.ac.tut.model.bean.TicketService"%>

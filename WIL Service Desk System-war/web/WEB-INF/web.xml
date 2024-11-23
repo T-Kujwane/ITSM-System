@@ -60,6 +60,14 @@
         <servlet-name>LogoutPage</servlet-name>
         <jsp-file>/logout.jsp</jsp-file>
     </servlet>
+    <servlet>
+        <servlet-name>ReportDownloadServlet</servlet-name>
+        <servlet-class>za.ac.tut.controller.servlet.ReportDownloadServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>TechnicianDashboardServlet</servlet-name>
+        <servlet-class>za.ac.tut.controller.servlet.TechnicianDashboardServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>CreateTicketServlet</servlet-name>
         <url-pattern>/createTicket</url-pattern>
@@ -119,6 +127,14 @@
     <servlet-mapping>
         <servlet-name>LogoutPage</servlet-name>
         <url-pattern>/logout</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ReportDownloadServlet</servlet-name>
+        <url-pattern>/ReportDownloadServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TechnicianDashboardServlet</servlet-name>
+        <url-pattern>/TechnicianDashboardServlet</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>30</session-timeout>
