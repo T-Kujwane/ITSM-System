@@ -497,7 +497,8 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     <formatter type="brief" usefile="false"/>
                     <formatter type="xml"/>
                     <jvmarg value="-ea"/>
-                    <jvmarg value="-agentlib:jdwp=transport=${debug-transport},address=${jpda.address}"/>
+                    <jvmarg line="${debug-args-line}"/>
+                    <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
                     <customize/>
                 </junit>
             </sequential>
@@ -529,7 +530,8 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     <formatter type="xml"/>
                     <jvmarg value="-ea"/>
                     <jvmarg line="${run.jvmargs.ide}"/>
-                    <jvmarg value="-agentlib:jdwp=transport=${debug-transport},address=${jpda.address}"/>
+                    <jvmarg line="${debug-args-line}"/>
+                    <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
                     <customize/>
                 </junit>
             </sequential>
@@ -680,6 +682,18 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
         </macrodef>
     </target>
     <target name="-init-debug-args">
+        <property name="version-output" value="java version &quot;${ant.java.version}"/>
+        <condition property="have-jdk-older-than-1.4">
+            <or>
+                <contains string="${version-output}" substring="java version &quot;1.0"/>
+                <contains string="${version-output}" substring="java version &quot;1.1"/>
+                <contains string="${version-output}" substring="java version &quot;1.2"/>
+                <contains string="${version-output}" substring="java version &quot;1.3"/>
+            </or>
+        </condition>
+        <condition else="-Xdebug" property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none">
+            <istrue value="${have-jdk-older-than-1.4}"/>
+        </condition>
         <condition else="dt_socket" property="debug-transport-by-os" value="dt_shmem">
             <os family="windows"/>
         </condition>
@@ -695,7 +709,8 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
             <element name="customize" optional="true"/>
             <sequential>
                 <java classname="@{classname}" fork="true">
-                    <jvmarg value="-agentlib:jdwp=transport=${debug-transport},address=${jpda.address}"/>
+                    <jvmarg line="${debug-args-line}"/>
+                    <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
                     <jvmarg line="${runmain.jvmargs}"/>
                     <classpath>
                         <path path="@{classpath}"/>
@@ -789,22 +804,30 @@ exists or setup the property manually. For example like this:
         <copyfiles files="${file.reference.mysql-connector-java-8.0.30.jar}" todir="${build.classes.dir}"/>
         <copyfiles files="${file.reference.javamail1_4_7.zip}" todir="${build.classes.dir}"/>
         <copyfiles files="${reference.WIL_Service_Desk_System_Class_Library.jar}" todir="${build.classes.dir}"/>
+        <copyfiles files="${file.reference.gson-2.11.0.jar}" todir="${build.classes.dir}"/>
+        <copyfiles files="${file.reference.itextpdf-5.5.13.2.jar}" todir="${build.classes.dir}"/>
     </target>
     <target if="is.server.weblogic" name="-library-inclusion-in-archive-weblogic">
         <basename file="${file.reference.mysql-connector-java-8.0.30.jar}" property="manifest.file.reference.mysql-connector-java-8.0.30.jar"/>
         <basename file="${file.reference.javamail1_4_7.zip}" property="manifest.file.reference.javamail1_4_7.zip"/>
         <basename file="${reference.WIL_Service_Desk_System_Class_Library.jar}" property="manifest.reference.WIL_Service_Desk_System_Class_Library.jar"/>
+        <basename file="${file.reference.gson-2.11.0.jar}" property="manifest.file.reference.gson-2.11.0.jar"/>
+        <basename file="${file.reference.itextpdf-5.5.13.2.jar}" property="manifest.file.reference.itextpdf-5.5.13.2.jar"/>
         <manifest file="${build.ear.classes.dir}/META-INF/MANIFEST.MF" mode="update">
-            <attribute name="Extension-List" value="jar-1 jar-2 jar-3 "/>
+            <attribute name="Extension-List" value="jar-1 jar-2 jar-3 jar-4 jar-5 "/>
             <attribute name="jar-1-Extension-Name" value="${manifest.file.reference.mysql-connector-java-8.0.30.jar}"/>
             <attribute name="jar-2-Extension-Name" value="${manifest.file.reference.javamail1_4_7.zip}"/>
             <attribute name="jar-3-Extension-Name" value="${manifest.reference.WIL_Service_Desk_System_Class_Library.jar}"/>
+            <attribute name="jar-4-Extension-Name" value="${manifest.file.reference.gson-2.11.0.jar}"/>
+            <attribute name="jar-5-Extension-Name" value="${manifest.file.reference.itextpdf-5.5.13.2.jar}"/>
         </manifest>
     </target>
     <target depends="compile" name="library-inclusion-in-manifest">
         <copyfiles files="${file.reference.mysql-connector-java-8.0.30.jar}" todir="${dist.ear.dir}/lib"/>
         <copyfiles files="${file.reference.javamail1_4_7.zip}" todir="${dist.ear.dir}/lib"/>
         <copyfiles files="${reference.WIL_Service_Desk_System_Class_Library.jar}" todir="${dist.ear.dir}/lib"/>
+        <copyfiles files="${file.reference.gson-2.11.0.jar}" todir="${dist.ear.dir}/lib"/>
+        <copyfiles files="${file.reference.itextpdf-5.5.13.2.jar}" todir="${dist.ear.dir}/lib"/>
         <manifest file="${build.ear.classes.dir}/META-INF/MANIFEST.MF" mode="update"/>
     </target>
     <target name="-copy-meta-inf">
@@ -1180,7 +1203,6 @@ exists or setup the property manually. For example like this:
     </target>
     <target depends="init,compile-test,-debug-start-debugger-test,-debug-start-debuggee-test" name="debug-test"/>
     <target depends="init,compile-test-single,-debug-start-debugger-test,-debug-start-debuggee-test-method" name="debug-test-method"/>
-    <target depends="debug-test-method" name="debug-single-method"/>
     <target depends="init,-pre-debug-fix,compile-test-single" if="netbeans.home" name="-do-debug-fix-test">
         <ejbjarproject1:nbjpdareload dir="${build.test.classes.dir}"/>
     </target>

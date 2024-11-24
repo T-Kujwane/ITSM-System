@@ -1,7 +1,7 @@
 <%-- 
     Document   : create_user
     Created on : 15 Sept 2024, 02:55:41
-    Author     : Thato Keith Kujwane
+    Author     : Thandeka Matampane
 --%>
 
 <%@page import="za.ac.tut.model.User"%>

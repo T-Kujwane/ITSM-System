@@ -1,8 +1,9 @@
 <%-- 
-    Document   : end_user_dashboard
-    Created on : 17 Sept 2024, 21:54:23
-    Author     : Thato Keith Kujwane
+    Document   : dashboard
+    Created on : 15 Sept 2024, 02:00:59
+    Author     : Thandeka Matampane
 --%>
+
 
 <%@page import="java.time.LocalDate"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -15,6 +16,7 @@
     <body>
         <header>
             <h1>End User Dashboard</h1>
+            <p><a href="logout.jsp">Logout</a></p> <!-- Add the logout link here -->
         </header>
 
         <main class="container">

@@ -60,7 +60,7 @@ public class CreateTicketServlet extends HttpServlet {
                         + "The assigned ticket is of Priority Level - " + createdTicket.getPriority().getPriorityLevel()
                         + " and should be resolved within " + createdTicket.getPriority().getSlaTime() + " hours.";
                 
-                if (createdTicket.getAssignedTo() != null){
+                if (createdTicket.getAssignedTo() != null && createdTicket.getAssignedTo().getUserId() > 1){
                     if (createdTicket.getAssignedTo().getEmail() != null && ! createdTicket.getAssignedTo().getEmail().equalsIgnoreCase("null") && ! createdTicket.getAssignedTo().getEmail().isEmpty()){
                         String technicianEmail = this.userService.getUserEmail(createdTicket.getAssignedTo().getUserId());
                         //Notify technician of the assigned ticket
