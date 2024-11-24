@@ -1,5 +1,11 @@
+<%-- 
+    Document   : dashboard
+    Created on : 15 Sept 2024, 02:00:59
+    Author     : Thandeka Matampane
+--%>
+
 <%@page import="javax.naming.Context"%>
-<%@page import="shaded.com.google.gson.Gson"%>
+<%@page import="com.google.gson.Gson"%>
 <%@page import="java.time.LocalDate"%>
 <%@ page import="za.ac.tut.model.User"%>
 <%@ page import="za.ac.tut.model.bean.TicketService"%>
@@ -32,7 +38,7 @@
             String userDashboard;
             switch(loggedInUserRoleID){
                 case 1:
-                    userDashboard = "user";
+                    userDashboard = "end_user";
                     break;
                 case 2:
                     userDashboard = "agent";

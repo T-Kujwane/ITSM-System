@@ -1,7 +1,7 @@
 <%-- 
-    Document   : logout
-    Created on : 19 Oct 2024, 7:34:29 PM
-    Author     : Thato Keith Kujwane
+    Document   : dashboard
+    Created on : 15 Sept 2024, 02:00:59
+    Author     : Thandeka Matampane
 --%>
 
 <%@page import="java.time.LocalDate"%>
@@ -46,7 +46,7 @@
         <header>
             <h1>IT Service Management System</h1>
         </header>
-        <main class="container">`
+        <main class="container">
             <h2>Logging Out</h2>
             <p>You have been logged out successfully.</p>
             <p>Redirecting to the homepage...</p>

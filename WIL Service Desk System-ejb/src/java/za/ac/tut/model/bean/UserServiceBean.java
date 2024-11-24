@@ -4,12 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.ejb.Stateless;
+import za.ac.tut.model.Ticket;
 import za.ac.tut.model.User;
 import za.ac.tut.model.util.DBConnection;
 
@@ -82,6 +80,7 @@ public class UserServiceBean implements UserService {
         rs.next();
 
         User user = getUser(rs);
+
         return user;
     }
 
@@ -154,6 +153,115 @@ public class UserServiceBean implements UserService {
 
         // Execute the update statement
         return stmt.executeUpdate() > 0;
+
     }
-    
+
+    @Override
+    public boolean checkUserExists(String usernameOrEmail) throws SQLException, ClassNotFoundException {
+        String query = "SELECT COUNT(*) FROM users WHERE username = ? OR email = ?";
+        try (Connection conn = DBConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, usernameOrEmail); // Set the username or email parameter
+            stmt.setString(2, usernameOrEmail); // Set the username or email parameter
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0; // Check if the count is greater than 0
+            }
+        }
+    }
+
+    @Override
+    public boolean updateUsername(String usernameOrEmail, String newUsername) throws SQLException, ClassNotFoundException {
+        // First, find the user by the provided username or email
+        User user = null;
+        String query = "SELECT * FROM users WHERE username = ? OR email = ?";
+        try (Connection conn = DBConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, usernameOrEmail);
+            stmt.setString(2, usernameOrEmail);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    user = new User(rs.getInt("user_id"), rs.getString("username"),
+                            rs.getString("password"), rs.getString("full_name"),
+                            rs.getString("email"), rs.getInt("role_id"));
+                }
+            }
+        }
+
+        if (user != null) {
+            // Now update the username
+            String updateQuery = "UPDATE users SET username = ? WHERE user_id = ?";
+            try (Connection conn = DBConnection.getConnection();
+                    PreparedStatement stmt = conn.prepareStatement(updateQuery)) {
+                stmt.setString(1, newUsername);
+                stmt.setInt(2, user.getUserId());
+
+                int rowsUpdated = stmt.executeUpdate();
+                return rowsUpdated > 0;
+            }
+        } else {
+            // User not found
+            return false;
+        }
+    }
+
+    @Override
+    public boolean updatePassword(String usernameOrEmail, String newPassword) throws SQLException, ClassNotFoundException {
+        // First, find the user by the provided username or email
+        User user = null;
+        String query = "SELECT * FROM users WHERE username = ? OR email = ?";
+        try (Connection conn = DBConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, usernameOrEmail);
+            stmt.setString(2, usernameOrEmail);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    user = new User(rs.getInt("user_id"), rs.getString("username"),
+                            rs.getString("password"), rs.getString("full_name"),
+                            rs.getString("email"), rs.getInt("role_id"));
+                }
+            }
+        }
+
+        if (user != null) {
+            // Now update the password (MD5 hashing it as before)
+            String updateQuery = "UPDATE users SET password = MD5(?) WHERE user_id = ?";
+            try (Connection conn = DBConnection.getConnection();
+                    PreparedStatement stmt = conn.prepareStatement(updateQuery)) {
+                stmt.setString(1, newPassword);  // MD5 password update
+                stmt.setInt(2, user.getUserId());
+
+                int rowsUpdated = stmt.executeUpdate();
+                return rowsUpdated > 0;
+            }
+        } else {
+            // User not found
+            return false;
+        }
+    }
+
+    @Override
+    public List<Ticket> getTicketsByUserId(int userId) throws ClassNotFoundException, SQLException {
+        List<Ticket> tickets = new ArrayList<>();
+        String query = "SELECT * FROM tickets WHERE created_by = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Ticket ticket = new Ticket(); // Assuming Ticket has a no-args constructor
+                ticket.setTicketId(rs.getInt("ticket_id"));
+                ticket.setTitle(rs.getString("title"));
+                ticket.setStatus(rs.getString("status"));
+                ticket.setCreatedAt(rs.getTimestamp("created_at")); // Assumes created_at is of type TIMESTAMP
+                ticket.setDescription(rs.getString("description"));
+                tickets.add(ticket);
+            }
+        }
+        return tickets; // Return list of tickets for the user
+    }
+
 }
