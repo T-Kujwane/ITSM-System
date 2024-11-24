@@ -16,6 +16,7 @@ public class forgotPassword extends HttpServlet {
     @EJB
     private UserService userService;
 
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // Get parameters from the form
@@ -66,7 +67,8 @@ public class forgotPassword extends HttpServlet {
                 }
 
             } else {
-                response.sendRedirect("forgot_password.jsp?error=No user found with the provided username or email.");
+                // If both username and password are incorrect, redirect to a page with a contact admin message
+                response.sendRedirect("forgot_password.jsp?error=No user found with the provided username or email. If you have forgotten both your username and password, please contact the admin at <a href='mailto:thandekabrad@gmail.com'>thandekabrad@gmail.com</a>.");
             }
         } catch (SQLException e) {
             Logger.getLogger(forgotPassword.class.getName()).log(Level.SEVERE, null, e);
