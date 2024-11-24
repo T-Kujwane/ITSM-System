@@ -14,7 +14,7 @@
     </head>
     <body>
         <header class="navbar">
-            <h1>IT Service Management Home</h1>
+            <h1>IT Service Management</h1>
             <nav>
                 <ul class="actions-list">
                     <!--<li><a class="nav-link" href="home">Home</a></li>-->

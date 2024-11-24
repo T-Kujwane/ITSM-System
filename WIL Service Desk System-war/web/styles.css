@@ -348,3 +348,15 @@ nav ul li a:hover {
     background-color: whitesmoke;
     color: black;
 }
+/* Styles for the navigation link */
+.navbar a {
+    color: white;
+    text-decoration: none; /* Remove underline */
+    padding: 10px 15px; /* Add padding */
+    border-radius: 4px; /* Round corners */
+}
+
+.navbar a:hover {
+    background-color: #bbb; /* Change background on hover */
+    color: #000; /* Change text color on hover */
+}
