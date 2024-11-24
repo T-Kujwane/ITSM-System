@@ -1,9 +1,12 @@
 package za.ac.tut.controller.servlet;
 
 import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -11,22 +14,41 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
+
+import za.ac.tut.model.User;
+import za.ac.tut.model.bean.TicketService;
 
 public class ReportDownloadServlet extends HttpServlet {
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String reportType = request.getParameter("reportType");
-        
+
+        // Ensure user is logged in and has the appropriate role
+        User usr = (User) request.getSession().getAttribute("user");
+        if (usr == null || usr.getRoleId() != 4) { // role_id 4 for manager
+            response.sendRedirect("login.jsp?resource=download_report.jsp");
+            return;
+        }
+
+        // EJB Lookup for TicketService
+        TicketService ticketService;
+        try {
+            Context ctx = new InitialContext();
+            ticketService = (TicketService) ctx.lookup("java:global/WIL_Service_Desk_System/WIL_Service_Desk_System-ejb/TicketServiceBean!za.ac.tut.model.bean.TicketService");
+        } catch (Exception e) {
+            throw new ServletException("Failed to look up EJB: " + e.getMessage(), e);
+        }
+
+        // Generate appropriate report
         try {
             if ("pdf".equalsIgnoreCase(reportType)) {
-                generatePdfReport(response);
+                generatePdfReport(response, ticketService);
             } else if ("csv".equalsIgnoreCase(reportType)) {
-                generateCsvReport(response);
+                generateCsvReport(response, ticketService);
             } else {
                 response.getWriter().write("Invalid report type selected.");
             }
@@ -34,109 +56,134 @@ public class ReportDownloadServlet extends HttpServlet {
             response.getWriter().write("Error generating report: " + e.getMessage());
         }
     }
-private void generatePdfReport(HttpServletResponse response) throws IOException, DocumentException {
-    response.setContentType("application/pdf");
-    response.setHeader("Content-Disposition", "attachment; filename=\"ticket_report.pdf\"");
 
-    try (OutputStream out = response.getOutputStream()) {
+    private void generatePdfReport(HttpServletResponse response, TicketService ticketService) throws IOException, DocumentException, SQLException, ClassNotFoundException {
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=\"ticket_report.pdf\"");
+
         Document document = new Document();
-        PdfWriter.getInstance(document, out);
-        document.open();
+        try {
+            OutputStream out = response.getOutputStream();
+            PdfWriter.getInstance(document, out);
+            document.open();
 
-        // Add title
-        document.add(new Paragraph("Ticket Report"));
-        document.add(new Paragraph(" "));
+            // Add title
+            document.add(new Paragraph("Ticket Report", FontFactory.getFont(FontFactory.HELVETICA, 16, Font.BOLD)));
+            document.add(new Paragraph(" "));  // Add some space
 
-        // Create a table with columns
-        PdfPTable table = new PdfPTable(5); // Number of columns should match the query result
-        table.setWidthPercentage(100);
-        table.setSpacingBefore(10f);
+            // Declare variables for counts
+            int totalTickets = ticketService.getTotalTickets();  // Total tickets
+            Map<String, Integer> statusCount = new HashMap<>();
+            Map<String, Integer> priorityCount = new HashMap<>();
 
-        // Add table headers
-        table.addCell("Ticket ID");
-        table.addCell("Title");
-        table.addCell("Status");
-        table.addCell("Priority");
-        table.addCell("Assigned Technician");
+            // Populate the counts
+            statusCount.put("Closed", ticketService.getTicketsByStatus("Closed").size());
+            statusCount.put("In Progress", ticketService.getTicketsByStatus("In Progress").size());
+            statusCount.put("Resolved", ticketService.getTicketsByStatus("Resolved").size());
+            statusCount.put("Open", ticketService.getTicketsByStatus("Open").size());
 
-        // Fetch ticket data from the database
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        String jdbcUrl = "jdbc:mysql://localhost:3306/service_desk_system?useSSL=false";
-        try (Connection connection = DriverManager.getConnection(jdbcUrl, "root", "root");
-             Statement statement = connection.createStatement()) {
+            priorityCount.put("Low", ticketService.getTicketsByPriority("Low").size());
+            priorityCount.put("Medium", ticketService.getTicketsByPriority("Medium").size());
+            priorityCount.put("High", ticketService.getTicketsByPriority("High").size());
+            priorityCount.put("Critical", ticketService.getTicketsByPriority("Critical").size());
 
-            // Corrected query
-            String query = "SELECT t.ticket_id, t.title, t.status, p.priority_name, u.full_name " +
-                           "FROM tickets t " +
-                           "JOIN ticket_priority tp ON t.ticket_id = tp.ticket_id " +
-                           "JOIN priority p ON tp.priority_id = p.priority_id " +
-                           "JOIN users u ON t.assigned_to = u.user_id";
-            ResultSet resultSet = statement.executeQuery(query);
+            // Create a table for the report
+            PdfPTable table = new PdfPTable(2); // 2 columns
+            table.setWidthPercentage(100);
+            table.setSpacingBefore(10f);
+            table.setSpacingAfter(10f);
 
-            // Add ticket data to table
-            while (resultSet.next()) {
-                table.addCell(String.valueOf(resultSet.getInt("ticket_id")));
-                table.addCell(resultSet.getString("title"));
-                table.addCell(resultSet.getString("status"));
-                table.addCell(resultSet.getString("priority_name"));
-                table.addCell(resultSet.getString("full_name"));
+            // Add header for total tickets
+            PdfPCell cell = new PdfPCell(new Phrase("Summary Overview"));
+            cell.setColspan(2);
+            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            cell.setBackgroundColor(BaseColor.GREEN); // Set background color to green
+            cell.setPadding(10);
+            table.addCell(cell);
+
+            // Add Total Tickets
+            table.addCell("Total Tickets:");
+            table.addCell(String.valueOf(totalTickets));
+
+            // Tickets by Status header
+            table.addCell("Tickets by Status:");
+            table.addCell(""); // Empty cell for alignment
+
+            for (Map.Entry<String, Integer> entry : statusCount.entrySet()) {
+                table.addCell(entry.getKey() + ":");
+                table.addCell(String.valueOf(entry.getValue()));
             }
 
-            // Add table to document
+            // Tickets by Priority header
+            table.addCell("Tickets by Priority:");
+            table.addCell(""); // Empty cell for alignment
+
+            for (Map.Entry<String, Integer> entry : priorityCount.entrySet()) {
+                table.addCell(entry.getKey() + ":");
+                table.addCell(String.valueOf(entry.getValue()));
+            }
+
+            // Add the table to the document
             document.add(table);
-        } catch (SQLException e) {
-            document.add(new Paragraph("Error fetching data: " + e.getMessage()));
+
+        } catch (DocumentException | IOException e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getOutputStream().write(("Error generating PDF: " + e.getMessage()).getBytes());
+            e.printStackTrace();  // Log the stack trace to server logs for debugging
         } finally {
+            // Properly close the document
             document.close();
         }
-    } catch (Exception e) {
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        response.getOutputStream().write(("Error generating PDF: " + e.getMessage()).getBytes());
     }
-}
-private void generateCsvReport(HttpServletResponse response) throws IOException {
-    response.setContentType("text/csv");
-    response.setHeader("Content-Disposition", "attachment; filename=\"ticket_report.csv\"");
 
-    try (PrintWriter writer = response.getWriter()) {
-        // Database connection and query execution
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        String jdbcUrl = "jdbc:mysql://localhost:3306/service_desk_system?useSSL=false";
-        
-        try (Connection connection = DriverManager.getConnection(jdbcUrl, "root", "root")) {
-            Statement statement = connection.createStatement();
-            
-            // Corrected SQL query to include priority_name from priority table
-            String query = "SELECT t.ticket_id, t.title, t.status, p.priority_name, u.full_name " +
-                           "FROM tickets t " +
-                           "JOIN ticket_priority tp ON t.ticket_id = tp.ticket_id " +
-                           "JOIN priority p ON tp.priority_id = p.priority_id " + // Correct join
-                           "JOIN users u ON t.assigned_to = u.user_id";         // Join with users table for technician name
-            
-            ResultSet resultSet = statement.executeQuery(query);
+    private void generateCsvReport(HttpServletResponse response, TicketService ticketService) throws IOException {
+        response.setContentType("text/csv");
+        response.setHeader("Content-Disposition", "attachment; filename=\"ticket_report.csv\"");
 
-            // Write CSV header
-            writer.println("Ticket ID,Title,Status,Priority,Assigned Technician");
+        try (PrintWriter writer = response.getWriter()) {
+            // Title of the report
+            writer.println("Ticket Report");
+            writer.println();  // Blank line for separation
 
-            // Write data rows
-            while (resultSet.next()) {
-                writer.printf("%d,%s,%s,%s,%s%n",
-                        resultSet.getInt("ticket_id"),
-                        resultSet.getString("title"),
-                        resultSet.getString("status"),
-                        resultSet.getString("priority_name"), // Correct column reference
-                        resultSet.getString("full_name"));
+            // Total Tickets
+            int totalTickets = ticketService.getTotalTickets();
+            writer.println("Total Tickets:," + totalTickets);
+            writer.println();  // Blank line for separation
+
+            // Tickets by Status
+            writer.println("Tickets by Status:");
+            writer.println("Status,Count");  // Header for status counts
+
+            Map<String, Integer> statusCount = new HashMap<>();
+            statusCount.put("Closed", ticketService.getTicketsByStatus("Closed").size());
+            statusCount.put("In Progress", ticketService.getTicketsByStatus("In Progress").size());
+            statusCount.put("Resolved", ticketService.getTicketsByStatus("Resolved").size());
+            statusCount.put("Open", ticketService.getTicketsByStatus("Open").size());
+
+            // Write status counts
+            for (Map.Entry<String, Integer> entry : statusCount.entrySet()) {
+                writer.printf("%s,%d%n", entry.getKey(), entry.getValue());
             }
-            
-            resultSet.close();
-            statement.close();
-        } catch (SQLException e) {
+            writer.println();  // Blank line for separation
+
+            // Tickets by Priority
+            writer.println("Tickets by Priority:");
+            writer.println("Priority,Count");  // Header for priority counts
+
+            Map<String, Integer> priorityCount = new HashMap<>();
+            priorityCount.put("High", ticketService.getTicketsByPriority("High").size());
+            priorityCount.put("Medium", ticketService.getTicketsByPriority("Medium").size());
+            priorityCount.put("Low", ticketService.getTicketsByPriority("Low").size());
+            priorityCount.put("Critical", ticketService.getTicketsByPriority("Critical").size());
+
+            // Write priority counts
+            for (Map.Entry<String, Integer> entry : priorityCount.entrySet()) {
+                writer.printf("%s,%d%n", entry.getKey(), entry.getValue());
+            }
+
+        } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("Failed to generate CSV: " + e.getMessage());
+            response.getWriter().write("Failed to write CSV: " + e.getMessage());
         }
-    } catch (Exception e) {
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        response.getWriter().write("Failed to write CSV: " + e.getMessage());
     }
-}
 }
