@@ -20,6 +20,7 @@
                     <!--<li><a class="nav-link" href="home">Home</a></li>-->
                     <li><a class="nav-link" href="create_ticket.jsp">Create Ticket</a></li>
                     <li><a class="nav-link" href="login-page">Login</a></li>
+                    <li><a class="nav-link" href="register">Sign-up</a></li>
                     <li><a class="nav-link" href="faq">FAQ</a></li>
                 </ul>
             </nav>

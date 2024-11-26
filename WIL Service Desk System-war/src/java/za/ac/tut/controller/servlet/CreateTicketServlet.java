@@ -54,7 +54,7 @@ public class CreateTicketServlet extends HttpServlet {
                 System.out.println("Ticket \"assigned to\" value: " + createdTicket.getAssignedTo());
                 String emailSubject = "ITSM - New Ticket Created: " + title;
                 String emailMessage = "A new ticket has been created\n"
-                        + "Ticket ID: REP00000" + createdTicket.getTicketId() + "\n"
+                        + "Ticket ID: " + createdTicket.getUserTicketID() + "\n"
                         + "Title: " + title + "\n"
                         + "Description: " + description + "\n\n\n"
                         + "The assigned ticket is of Priority Level - " + createdTicket.getPriority().getPriorityLevel()
@@ -73,7 +73,7 @@ public class CreateTicketServlet extends HttpServlet {
                         + "Thank you for reporting your technical challenge. We would like to assure"
                         + " you that our team is working on it, and the issue will be resolved in a "
                         + "timely manner. You encouraged to exercise patience during this time.\n"
-                        + "Please take note that your assigned ticket reference number is REP00000" + createdTicket.getTicketId() + "\n"
+                        + "Please take note that your assigned ticket reference number is " + createdTicket.getUserTicketID() + "\n"
                         + ". You are required to quote your reference number when reaching out to service desk regarding this matter.\n\n"
                         + "Thank you.\n\n"
                         + "Kind regards,\n"

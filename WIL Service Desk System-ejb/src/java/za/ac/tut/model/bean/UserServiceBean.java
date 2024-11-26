@@ -240,28 +240,4 @@ public class UserServiceBean implements UserService {
             return false;
         }
     }
-
-    @Override
-    public List<Ticket> getTicketsByUserId(int userId) throws ClassNotFoundException, SQLException {
-        List<Ticket> tickets = new ArrayList<>();
-        String query = "SELECT * FROM tickets WHERE created_by = ?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, userId);
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                Ticket ticket = new Ticket(); // Assuming Ticket has a no-args constructor
-                ticket.setTicketId(rs.getInt("ticket_id"));
-                ticket.setTitle(rs.getString("title"));
-                ticket.setStatus(rs.getString("status"));
-                ticket.setCreatedAt(rs.getTimestamp("created_at")); // Assumes created_at is of type TIMESTAMP
-                ticket.setDescription(rs.getString("description"));
-                tickets.add(ticket);
-            }
-        }
-        return tickets; // Return list of tickets for the user
-    }
-
 }

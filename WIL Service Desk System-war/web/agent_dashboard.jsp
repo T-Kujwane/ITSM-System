@@ -93,7 +93,6 @@
                         <%  
                             if (allTickets != null && !allTickets.isEmpty()) {
                                 for (Ticket ticket : allTickets) {
-                                System.out.println("Processing ticket: " + ticket + " on a " + allTickets.size() + " list");
                         %>
                                     <tr>
                                         <td><%= ticket.getTicketId() %></td>
@@ -102,7 +101,7 @@
                                         <td><%= ticket.getPriority().getPriorityLevel().toUpperCase().replace("_", "")%></td>
                                         <td><%= ticket.getAssignedTo().getFullName()%></td>
                                         <td>
-                                            <button class="action-link" onclick="openTicketModal(<%= ticket.getTicketId() %>, '<%= ticket.getTitle() %>', '<%= ticket.getDescription() %>', '<%= ticket.getStatus().toUpperCase() %>', '<%= ticket.getPriority().getPriorityLevel().toUpperCase()%>', <%= ticket.getAssignedTo().getUserId()%>)">Manage</button>
+                                            <button class="action-link" onclick="openTicketModal(<%= ticket.getTicketId() %>, '<%= ticket.getTitle() %>', '<%= ticket.getDescription() %>', '<%= ticket.getStatus().toUpperCase() %>', '<%= ticket.getPriority().getPriorityLevel().toUpperCase()%>', <%= ticket.getAssignedTo().getUserId()%>);">Manage</button>
                                         </td>
                                     </tr>
                         <%
@@ -135,8 +134,10 @@
                 <span class="close" onclick="closeModal()">&times;</span>
                 <h2>Ticket Details</h2>
                 <form id="ticketForm" action="updateTicket" method="POST">
-                    <input type="text" hidden="" name="caller" value="agent_dashboard.jsp">
+                    <input type="text" hidden="" name="caller" value="agent">
                     <input hidden="" type="text" id="ticketId" name="ticketId">
+                    <input type="text" hidden name="action" value="assign">
+                    
                     <label for="title">Title:</label>
                     <input type="text" id="title" name="title" required readonly="">
 
@@ -144,14 +145,8 @@
                     <textarea id="description" name="description" required readonly=""></textarea>
 
                     <label for="status">Status:</label>
-                    <select id="status" name="status" required>
-                        <option value="OPEN">Open</option>
-                        <option value="IN_PROGRESS">In Progress</option>
-                        <option value="ESCALATED">Escalated</option>
-                        <option value="RESOLVED">Resolved</option>
-                        <option value="CLOSED">Closed</option>
-                    </select>
-
+                    <input type="text" id="status" name="status" required readonly>
+                    
                     <label for="priority">Priority:</label>
                     <select id="priority" name="priority" required>
                         <option value="CRITICAL">Critical</option>

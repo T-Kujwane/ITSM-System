@@ -80,6 +80,14 @@
         <servlet-name>ViewTicketsServlet</servlet-name>
         <servlet-class>za.ac.tut.controller.servlet.ViewTicketsServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>CreateTicketPage</servlet-name>
+        <jsp-file>/create_ticket.jsp</jsp-file>
+    </servlet>
+    <servlet>
+        <servlet-name>CreateAccountPage</servlet-name>
+        <jsp-file>/create_account.jsp</jsp-file>
+    </servlet>
     <servlet-mapping>
         <servlet-name>CreateTicketServlet</servlet-name>
         <url-pattern>/createTicket</url-pattern>
@@ -159,6 +167,14 @@
     <servlet-mapping>
         <servlet-name>ViewTicketsServlet</servlet-name>
         <url-pattern>/ViewTicketsServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CreateTicketPage</servlet-name>
+        <url-pattern>/new-ticket</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CreateAccountPage</servlet-name>
+        <url-pattern>/register</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>30</session-timeout>

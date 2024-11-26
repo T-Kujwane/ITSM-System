@@ -6,18 +6,38 @@ public class TicketUpdate {
 
     private int updateId;
     private int ticketId;
-    private int updatedBy;
+    private User updatedBy;
     private String comment;
     private Date createdAt;
+    private String ticketStatus;
 
     // Constructor
-    public TicketUpdate(int updateId, int ticketId, int updatedBy, String comment, Date createdAt) {
+    public TicketUpdate(int updateId, int ticketId, int updatedBy, String comment, Date createdAt, String ticketStatus) {
+        this.updateId = updateId;
+        this.ticketId = ticketId;
+        this.updatedBy = new User(updatedBy);
+        this.comment = comment;
+        this.createdAt = createdAt;
+        setTicketStatus(ticketStatus);
+    }
+    
+    public TicketUpdate(int updateId, int ticketId, User updatedBy, String comment, Date createdAt, String ticketStatus) {
         this.updateId = updateId;
         this.ticketId = ticketId;
         this.updatedBy = updatedBy;
         this.comment = comment;
         this.createdAt = createdAt;
+        setTicketStatus(ticketStatus);
     }
+
+    public TicketUpdate(int ticketId, int updatedBy, String comment, String ticketStatus) {
+        this.ticketId = ticketId;
+        this.updatedBy = new User(updatedBy);
+        this.comment = comment;
+        setTicketStatus(ticketStatus);
+    }
+    
+    
 
     // Getters and Setters
     public int getUpdateId() {
@@ -36,11 +56,15 @@ public class TicketUpdate {
         this.ticketId = ticketId;
     }
 
-    public int getUpdatedBy() {
+    public User getUpdatedBy() {
         return updatedBy;
     }
 
     public void setUpdatedBy(int updatedBy) {
+        this.updatedBy = new User(updatedBy);
+    }
+    
+    public void setUpdatedBy(User updatedBy){
         this.updatedBy = updatedBy;
     }
 
@@ -59,4 +83,19 @@ public class TicketUpdate {
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
+
+    public String getTicketStatus() {
+        return ticketStatus;
+    }
+
+    public final void setTicketStatus(String ticketStatus) {
+        this.ticketStatus = ticketStatus;
+    }
+
+    @Override
+    public String toString() {
+        return "TicketUpdate{" + "updatedBy=" + updatedBy + ", comment=" + comment + ", createdAt=" + createdAt + ", ticketStatus=" + ticketStatus + '}';
+    }
+    
+    
 }
