@@ -31,10 +31,11 @@
             <input type="email" id="email" name="email" required><br>
 
             <!-- Role Selection with Default set to End User -->
-            <label for="role">Role:</label>
+            <input id="role" type="text" value="1" name="role" hidden>
+            <!--<label for="role">Role:</label>
             <select id="role" name="role" required>
                 <option value="1" selected>End User</option> <!-- End User is set as the default -->
-            </select><br>
+            <!--</select>--><br>
 
             <!-- Submit Button -->
             <button type="submit">Create Account</button>

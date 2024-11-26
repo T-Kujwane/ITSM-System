@@ -52,7 +52,6 @@
                     List<Ticket> closedTickets = ticketService.getTicketsByStatus("Closed");
                     List<Ticket> resolvedTickets = ticketService.getTicketsByStatus("Resolved");
                 %>
-
                     <section class="ticket-summary-section">
                         <h2>Ticket Overview</h2>
                         <table class="summary-table">
@@ -163,7 +162,7 @@
                         List<User> technicians = userService.getUserByType("technician");
                         if (technicians.isEmpty()) {
                     %>
-                        <option value="-1" selected=>No technicians available yet</option>
+                            <option value="-1" selected=>No technicians available yet</option>
                     <% } else { %>
                             <option value="1">Do not assign</option>
                         <% for (User u : technicians) { %>
